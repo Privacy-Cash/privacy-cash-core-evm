@@ -11,6 +11,7 @@ const ETHER_POOL_ADDRESS = '0x74A6EBe030d07ae8653344d291DF87d7c0e2868B'
 const DEPLOY_BLOCK = 38062882
 const UTXO_STORE_PATH = path.join(__dirname, '..', '.utxos.json')
 
+
 async function main() {
   require('./compileHasher')
 
