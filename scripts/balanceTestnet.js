@@ -28,8 +28,8 @@ async function main() {
   console.log(`\nLocal UTXOs: ${store.length}`)
 
   // Rebuild the on-chain Merkle tree
-  const tree = await buildMerkleTree({ etherPool, fromBlock: DEPLOY_BLOCK })
-  console.log(`On-chain commitments: ${tree.elements().length}`)
+  // const tree = await buildMerkleTree({ etherPool, fromBlock: DEPLOY_BLOCK })
+  // console.log(`On-chain commitments: ${tree.elements().length}`)
 
   let unspentTotal = ethers.BigNumber.from(0)
   let spentCount = 0
@@ -45,14 +45,28 @@ async function main() {
     })
 
     const commitment = toFixedHex(utxo.getCommitment())
-    const index = tree.indexOf(commitment)
 
-    if (index < 0) {
-      console.log(`  #${i}: ${utils.formatEther(entry.amount)} ETH - NOT IN TREE (pending or invalid)`)
+    let res = await fetch('https://basetest.privacycashapi.com/get_index', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commitment }),
+    })
+    const data = await res.json()
+    if (data.index !== undefined) {
+      console.log(`  #${i}: ${utils.formatEther(entry.amount)} ETH - INDEX ${data.index} (from API)`)
+      utxo.index = data.index
+      unspentTotal = unspentTotal.add(entry.amount)
+      unspentCount++
       continue
     }
+    // const index = tree.indexOf(commitment)
 
-    utxo.index = index
+    // if (index < 0) {
+    //   console.log(`  #${i}: ${utils.formatEther(entry.amount)} ETH - NOT IN TREE (pending or invalid)`)
+    //   continue
+    // }
+
+    // utxo.index = index
     const nullifier = toFixedHex(utxo.getNullifier())
     const isSpent = await etherPool.isSpent(nullifier)
 
