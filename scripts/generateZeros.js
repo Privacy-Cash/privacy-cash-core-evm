@@ -17,5 +17,9 @@ console.log(`// = ${zeroValue.toString()}\n`)
 
 for (let i = 0; i <= 32; i++) {
   const hex = '0x' + zeros[i].toString(16).padStart(64, '0')
-  console.log(`if (i == ${i}) return bytes32(${hex});`)
+  if (i === 0) {
+    console.log(`if (i == ${i}) return bytes32(${hex});`)
+  } else {
+    console.log(`else if (i == ${i}) return bytes32(${hex});`)
+  }
 }
