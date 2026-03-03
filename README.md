@@ -40,7 +40,12 @@ Deploy a new implementation and upgrade the proxy:
 PROXY_ADDRESS=<proxy address> npx hardhat run scripts/deployUpgrade.js --network baseSepolia
 ```
 
-If the deployer is the admin, the upgrade executes immediately. If the admin is a multisig, the script deploys and validates the new implementation, then the multisig must call `upgradeToAndCall(newImpl, "0x")` on the proxy.
+Go to Safe transaction builder:
+To Address: <proxy address>
+Eth Value: 0
+Contract Method Selector: upgradeToAndCall
+newImplementation (address): implementation address deployed from scripts/deployUpgrade.js script
+data: 0x
 
 ## Testnet Deployment (Base Sepolia)
 
