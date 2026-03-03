@@ -46,9 +46,9 @@ If the deployer is the admin, the upgrade executes immediately. If the admin is 
 
 | Contract | Address |
 |---|---|
-| EtherPool (proxy) | `0xe689db404EC8779951eeb7d9ed4D5E36bd60F86A` |
-| Verifier2 | `0xc0538061a82933Dac468f90FEf269164AF14d4Bb` |
-| Hasher | `0x3fbb79829291451cff369330b25B4aAaF63DE3c3` |
+| EtherPool (proxy) | `0x07E212E99d777d797c7B4CB5ffE3CaC5584c11Ed` |
+| Verifier2 | `0x8899c4bf76a1ab01C2E95Eb19Dd0e3fe27F4673c` |
+| Hasher | `0x09f594F958cEcd9182DFD748A3E18f98F3a4A8BE` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
 ## Architecture
