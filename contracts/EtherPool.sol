@@ -6,10 +6,10 @@ import "./Verifier2.sol";
 import "./MerkleTreeWithHistory.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
 // Pool for Ether transactions.
-contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pausable {
+contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, PausableUpgradeable {
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
 
@@ -66,6 +66,7 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
   function initialize(uint256 _maximumDepositAmount, address _admin) external initializer {
     require(_admin != address(0), "admin is zero address");
     admin = _admin;
+    __Pausable_init();
     _configureLimits(_maximumDepositAmount);
     super._initialize();
   }
