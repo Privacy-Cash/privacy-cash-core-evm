@@ -40,14 +40,8 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard {
     bytes32 extDataHash;
   }
 
-  struct Account {
-    address owner;
-    bytes publicKey;
-  }
-
   event NewCommitment(bytes32 commitment, uint256 index, bytes encryptedOutput);
   event NewNullifier(bytes32 nullifier);
-  event PublicKey(address indexed owner, bytes key);
   event LimitsConfigured(uint256 maximumDepositAmount);
   event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
 
