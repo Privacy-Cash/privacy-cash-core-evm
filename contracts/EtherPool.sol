@@ -6,9 +6,10 @@ import "./Verifier2.sol";
 import "./MerkleTreeWithHistory.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 // Pool for Ether transactions.
-contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard {
+contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pausable {
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
 
@@ -69,7 +70,7 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard {
     super._initialize();
   }
 
-  function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant {
+  function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant whenNotPaused {
     require(isKnownRoot(_args.root), "Invalid merkle root");
     require(!isSpent(_args.inputNullifiers[0]) && !isSpent(_args.inputNullifiers[1]), "Input is already spent");
     require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
@@ -113,6 +114,14 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard {
     emit AdminChanged(admin, pendingAdmin);
     admin = pendingAdmin;
     pendingAdmin = address(0);
+  }
+
+  function pause() public onlyAdmin {
+    _pause();
+  }
+
+  function unpause() public onlyAdmin {
+    _unpause();
   }
 
   function configureLimits(uint256 _maximumDepositAmount) public onlyAdmin {
