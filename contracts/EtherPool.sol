@@ -5,19 +5,10 @@ pragma solidity 0.8.24;
 import "./Verifier2.sol";
 import "./MerkleTreeWithHistory.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 // Pool for Ether transactions.
-contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable {
-  uint256 private constant _NOT_ENTERED = 1;
-  uint256 private constant _ENTERED = 2;
-  uint256 private _status;
-
-  modifier nonReentrant() {
-    require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-    _status = _ENTERED;
-    _;
-    _status = _NOT_ENTERED;
-  }
+contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard {
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
 
@@ -79,7 +70,6 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable {
 
   function initialize(uint256 _maximumDepositAmount, address _admin) external initializer {
     require(_admin != address(0), "admin is zero address");
-    _status = _NOT_ENTERED;
     admin = _admin;
     _configureLimits(_maximumDepositAmount);
     super._initialize();
