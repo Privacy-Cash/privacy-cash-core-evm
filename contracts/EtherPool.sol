@@ -5,19 +5,11 @@ pragma solidity 0.8.24;
 import "./Verifier2.sol";
 import "./MerkleTreeWithHistory.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
 // Pool for Ether transactions.
-contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable {
-  uint256 private constant _NOT_ENTERED = 1;
-  uint256 private constant _ENTERED = 2;
-  uint256 private _status;
-
-  modifier nonReentrant() {
-    require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-    _status = _ENTERED;
-    _;
-    _status = _NOT_ENTERED;
-  }
+contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, PausableUpgradeable {
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
 
@@ -49,14 +41,8 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable {
     bytes32 extDataHash;
   }
 
-  struct Account {
-    address owner;
-    bytes publicKey;
-  }
-
   event NewCommitment(bytes32 commitment, uint256 index, bytes encryptedOutput);
   event NewNullifier(bytes32 nullifier);
-  event PublicKey(address indexed owner, bytes key);
   event LimitsConfigured(uint256 maximumDepositAmount);
   event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
 
@@ -79,13 +65,13 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable {
 
   function initialize(uint256 _maximumDepositAmount, address _admin) external initializer {
     require(_admin != address(0), "admin is zero address");
-    _status = _NOT_ENTERED;
     admin = _admin;
+    __Pausable_init();
     _configureLimits(_maximumDepositAmount);
     super._initialize();
   }
 
-  function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant {
+  function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant whenNotPaused {
     require(isKnownRoot(_args.root), "Invalid merkle root");
     require(!isSpent(_args.inputNullifiers[0]) && !isSpent(_args.inputNullifiers[1]), "Input is already spent");
     require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
@@ -129,6 +115,14 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable {
     emit AdminChanged(admin, pendingAdmin);
     admin = pendingAdmin;
     pendingAdmin = address(0);
+  }
+
+  function pause() public onlyAdmin {
+    _pause();
+  }
+
+  function unpause() public onlyAdmin {
+    _unpause();
   }
 
   function configureLimits(uint256 _maximumDepositAmount) public onlyAdmin {

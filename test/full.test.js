@@ -928,6 +928,69 @@ describe('EtherPool', function () {
     expect(result).to.be.equal(fieldSize.sub(utils.parseEther('0.1')))
   })
 
+  it('admin can pause and unpause', async () => {
+    const { etherPool, admin } = await loadFixture(fixture)
+
+    expect(await etherPool.paused()).to.be.false
+
+    await etherPool.connect(admin).pause()
+    expect(await etherPool.paused()).to.be.true
+
+    await etherPool.connect(admin).unpause()
+    expect(await etherPool.paused()).to.be.false
+  })
+
+  it('non-admin cannot pause', async () => {
+    const { etherPool, sender } = await loadFixture(fixture)
+    await expect(
+      etherPool.connect(sender).pause(),
+    ).to.be.revertedWith('only admin')
+  })
+
+  it('non-admin cannot unpause', async () => {
+    const { etherPool, admin, sender } = await loadFixture(fixture)
+    await etherPool.connect(admin).pause()
+    await expect(
+      etherPool.connect(sender).unpause(),
+    ).to.be.revertedWith('only admin')
+  })
+
+  it('transact is blocked when paused', async function () {
+    const { etherPool, admin, encryptionKey } = await loadFixture(fixture)
+    const tree = createEmptyTree()
+
+    const depositAmount = utils.parseEther('0.05')
+    const utxo = new Utxo({ amount: depositAmount })
+    const { args, extData } = await prepareTransaction({
+      tree,
+      outputs: [utxo],
+      encryptionKey,
+    })
+
+    await etherPool.connect(admin).pause()
+
+    await expect(
+      etherPool.transact(args, extData, {
+        value: depositAmount,
+        gasLimit: 50e6,
+      }),
+    ).to.be.reverted
+  })
+
+  it('transact works after unpause', async function () {
+    const { etherPool, admin, encryptionKey } = await loadFixture(fixture)
+    const tree = createEmptyTree()
+
+    await etherPool.connect(admin).pause()
+    await etherPool.connect(admin).unpause()
+
+    const depositAmount = utils.parseEther('0.05')
+    const utxo = new Utxo({ amount: depositAmount })
+    await transaction({ etherPool, tree, outputs: [utxo], encryptionKey })
+
+    expect(await ethers.provider.getBalance(etherPool.address)).to.be.equal(depositAmount)
+  })
+
   it('should be compliant', async function () {
     // basically verifier should check if a commitment and a nullifier hash are on chain
     const { etherPool, encryptionKey } = await loadFixture(fixture)
