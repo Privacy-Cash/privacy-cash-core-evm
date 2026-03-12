@@ -11,7 +11,7 @@
     "compile": "npx hardhat compile && yarn compile:hasher",
     "build": "npm run circuit && npm run compile",
     "deploy": "npx hardhat run scripts/deploy.js --network base",
-    "deploy:testnet": "npx hardhat run scripts/deployTestnet.js --network baseSepolia",
+    "deploy:testnet": "npx hardhat run scripts/deploy.js --network baseSepolia",
     "deposit:testnet": "npx hardhat run scripts/depositTestnet.js --network baseSepolia",
     "balance:testnet": "npx hardhat run scripts/balanceTestnet.js --network baseSepolia",
     "withdraw:testnet": "npx hardhat run scripts/withdrawTestnet.js --network baseSepolia",

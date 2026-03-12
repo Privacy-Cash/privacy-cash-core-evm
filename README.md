@@ -26,10 +26,14 @@ ADMIN_ADDRESS=<admin/multisig address (optional, defaults to 0x44eb9939cfdE7C394
 yarn test
 ```
 
-## Deploy (Base Sepolia)
+## Deploy
 
 ```bash
-npx hardhat run scripts/deployTestnet.js --network baseSepolia
+# Base Sepolia (testnet)
+npx hardhat run scripts/deploy.js --network baseSepolia
+
+# Base (mainnet)
+npx hardhat run scripts/deploy.js --network base
 ```
 
 ## Upgrade

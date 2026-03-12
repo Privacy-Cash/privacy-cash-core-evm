@@ -58,6 +58,15 @@ const config = {
             mnemonic: 'test test test test test test test test test test test junk',
           },
     },
+    base: {
+      url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
+      chainId: 8453,
+      accounts: process.env.PRIVATE_KEY
+        ? [process.env.PRIVATE_KEY]
+        : {
+            mnemonic: 'test test test test test test test test test test test junk',
+          },
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_KEY,
