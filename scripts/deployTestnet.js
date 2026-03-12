@@ -2,7 +2,7 @@ const { ethers, upgrades } = require('hardhat')
 const { utils } = ethers
 
 const MERKLE_TREE_HEIGHT = 26
-const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('10')
+const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('1000')
 const ADMIN_ADDRESS = process.env.ADMIN_ADDRESS || '0x44eb9939cfdE7C394f1632C6890191d695f0a3ce'
 
 async function main() {
