@@ -6,6 +6,7 @@ const { utils } = ethers
 
 const MERKLE_TREE_HEIGHT = 26
 const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('1')
+const MINIMUM_AMOUNT = utils.parseEther('0.0005')
 
 describe('Encrypted output size limit (PCEVM-L02)', function () {
   async function deploy(contractName, ...args) {
@@ -30,6 +31,7 @@ describe('Encrypted output size limit (PCEVM-L02)', function () {
 
     const initData = EtherPool.interface.encodeFunctionData('initialize', [
       MAXIMUM_DEPOSIT_AMOUNT,
+      MINIMUM_AMOUNT,
       admin.address,
     ])
     const ERC1967Proxy = await ethers.getContractFactory('ERC1967Proxy')

@@ -6,6 +6,7 @@ const { utils } = ethers
 
 const MERKLE_TREE_HEIGHT = 26
 const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('1')
+const MINIMUM_AMOUNT = utils.parseEther('0.0005')
 
 describe('EtherPool Upgrades', function () {
 
@@ -26,7 +27,7 @@ describe('EtherPool Upgrades', function () {
     const EtherPool = await ethers.getContractFactory('EtherPool')
     const etherPool = await upgrades.deployProxy(
       EtherPool,
-      [MAXIMUM_DEPOSIT_AMOUNT, admin.address],
+      [MAXIMUM_DEPOSIT_AMOUNT, MINIMUM_AMOUNT, admin.address],
       {
         kind: 'uups',
         initializer: 'initialize',
@@ -57,7 +58,7 @@ describe('EtherPool Upgrades', function () {
     it('should not allow re-initialization', async () => {
       const { etherPool, admin } = await loadFixture(fixture)
       await expect(
-        etherPool.initialize(MAXIMUM_DEPOSIT_AMOUNT, admin.address),
+        etherPool.initialize(MAXIMUM_DEPOSIT_AMOUNT, MINIMUM_AMOUNT, admin.address),
       ).to.be.reverted
     })
   })
@@ -67,7 +68,7 @@ describe('EtherPool Upgrades', function () {
       const { etherPool, verifier2, hasher, admin } = await loadFixture(fixture)
 
       const newLimit = utils.parseEther('5')
-      await etherPool.connect(admin).configureLimits(newLimit)
+      await etherPool.connect(admin).configureMaximumDepositAmount(newLimit)
       expect(await etherPool.maximumDepositAmount()).to.equal(newLimit)
 
       const EtherPoolV2 = await ethers.getContractFactory('EtherPoolV2Mock', admin)
