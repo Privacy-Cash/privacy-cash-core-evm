@@ -12,6 +12,7 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, PausableUpgradeable {
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
+  uint256 public constant MAX_ENCRYPTED_OUTPUT_SIZE = 256;
 
   Verifier2 public immutable verifier2;
   address public admin;
@@ -72,6 +73,11 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
   }
 
   function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant whenNotPaused {
+    require(
+      _extData.encryptedOutput1.length <= MAX_ENCRYPTED_OUTPUT_SIZE &&
+      _extData.encryptedOutput2.length <= MAX_ENCRYPTED_OUTPUT_SIZE,
+      "Encrypted output too large"
+    );
     require(isKnownRoot(_args.root), "Invalid merkle root");
     require(!isSpent(_args.inputNullifiers[0]) && !isSpent(_args.inputNullifiers[1]), "Input is already spent");
     require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
