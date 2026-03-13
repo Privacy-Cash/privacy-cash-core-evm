@@ -88,13 +88,23 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
     } else if (_extData.extAmount < 0) {
       require(msg.value == 0, "Cannot send ETH during withdrawal");
       require(_extData.recipient != address(0), "Can't withdraw to zero address");
-      (bool success, ) = _extData.recipient.call{value: uint256(-_extData.extAmount)}("");
+      bool success;
+      address recipient = _extData.recipient;
+      uint256 amount = uint256(-_extData.extAmount);
+      assembly {
+        success := call(gas(), recipient, amount, 0, 0, 0, 0)
+      }
       require(success, "ETH transfer failed");
     }
 
     // fees and feeRecipient are intentionally not checked at protocol level, as a tip to the relayer
     if (_extData.fee > 0) {
-      (bool success, ) = _extData.feeRecipient.call{value: _extData.fee}("");
+      bool success;
+      address feeRecipient = _extData.feeRecipient;
+      uint256 feeAmount = _extData.fee;
+      assembly {
+        success := call(gas(), feeRecipient, feeAmount, 0, 0, 0, 0)
+      }
       require(success, "Fee transfer failed");
     }
 
