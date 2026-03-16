@@ -200,11 +200,13 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
   }
 
   function _configureMaximumDepositAmount(uint256 _maximumDepositAmount) internal {
+    require(minimumAmount <= _maximumDepositAmount, "min exceeds max");
     maximumDepositAmount = _maximumDepositAmount;
     emit MaximumDepositAmountConfigured(_maximumDepositAmount);
   }
 
   function _configureMinimumAmount(uint256 _minimumAmount) internal {
+    require(_minimumAmount <= maximumDepositAmount, "min exceeds max");
     minimumAmount = _minimumAmount;
     emit MinimumAmountConfigured(_minimumAmount);
   }

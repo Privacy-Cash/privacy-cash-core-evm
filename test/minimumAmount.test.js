@@ -269,4 +269,61 @@ describe('Minimum amount enforcement (PCEVM-L03)', function () {
       ),
     ).to.be.revertedWith('Invalid merkle root')
   })
+
+  // --- Cross-validation ---
+
+  it('rejects configureMinimumAmount exceeding current max', async function () {
+    const { etherPool, admin } = await loadFixture(fixture)
+
+    await expect(
+      etherPool.connect(admin).configureMinimumAmount(MAXIMUM_DEPOSIT_AMOUNT.add(1)),
+    ).to.be.revertedWith('min exceeds max')
+  })
+
+  it('rejects configureMaximumDepositAmount below current min', async function () {
+    const { etherPool, admin } = await loadFixture(fixture)
+
+    // minimumAmount is 0.0005 ETH, try setting max below that
+    await expect(
+      etherPool.connect(admin).configureMaximumDepositAmount(MINIMUM_AMOUNT.sub(1)),
+    ).to.be.revertedWith('min exceeds max')
+  })
+
+  it('allows setting max equal to min', async function () {
+    const { etherPool, admin } = await loadFixture(fixture)
+
+    await etherPool.connect(admin).configureMaximumDepositAmount(MINIMUM_AMOUNT)
+    expect(await etherPool.maximumDepositAmount()).to.equal(MINIMUM_AMOUNT)
+  })
+
+  it('allows setting min equal to max', async function () {
+    const { etherPool, admin } = await loadFixture(fixture)
+
+    await etherPool.connect(admin).configureMinimumAmount(MAXIMUM_DEPOSIT_AMOUNT)
+    expect(await etherPool.minimumAmount()).to.equal(MAXIMUM_DEPOSIT_AMOUNT)
+  })
+
+  it('to widen range: raise max first, then raise min', async function () {
+    const { etherPool, admin } = await loadFixture(fixture)
+    const newMax = utils.parseEther('10')
+    const newMin = utils.parseEther('5')
+
+    await etherPool.connect(admin).configureMaximumDepositAmount(newMax)
+    await etherPool.connect(admin).configureMinimumAmount(newMin)
+
+    expect(await etherPool.maximumDepositAmount()).to.equal(newMax)
+    expect(await etherPool.minimumAmount()).to.equal(newMin)
+  })
+
+  it('to narrow range: lower min first, then lower max', async function () {
+    const { etherPool, admin } = await loadFixture(fixture)
+    const newMin = utils.parseEther('0.0001')
+    const newMax = utils.parseEther('0.001')
+
+    await etherPool.connect(admin).configureMinimumAmount(newMin)
+    await etherPool.connect(admin).configureMaximumDepositAmount(newMax)
+
+    expect(await etherPool.maximumDepositAmount()).to.equal(newMax)
+    expect(await etherPool.minimumAmount()).to.equal(newMin)
+  })
 })
