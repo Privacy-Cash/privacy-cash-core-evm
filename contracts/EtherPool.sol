@@ -12,12 +12,14 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, PausableUpgradeable {
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
+  uint256 public constant MAX_ENCRYPTED_OUTPUT_SIZE = 256;
 
   Verifier2 public immutable verifier2;
   address public admin;
   address public pendingAdmin;
 
   uint256 public maximumDepositAmount;
+  uint256 public minimumAmount;
   mapping(bytes32 => bool) public nullifierHashes;
 
   // no need to put tokenAddress here, since it's one contract per token
@@ -43,7 +45,8 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
 
   event NewCommitment(bytes32 commitment, uint256 index, bytes encryptedOutput);
   event NewNullifier(bytes32 nullifier);
-  event LimitsConfigured(uint256 maximumDepositAmount);
+  event MaximumDepositAmountConfigured(uint256 maximumDepositAmount);
+  event MinimumAmountConfigured(uint256 minimumAmount);
   event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
 
   modifier onlyAdmin() {
@@ -63,15 +66,26 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
     _disableInitializers();
   }
 
-  function initialize(uint256 _maximumDepositAmount, address _admin) external initializer {
+  function initialize(uint256 _maximumDepositAmount, uint256 _minimumAmount, address _admin) external initializer {
     require(_admin != address(0), "admin is zero address");
     admin = _admin;
     __Pausable_init();
-    _configureLimits(_maximumDepositAmount);
+    _configureMaximumDepositAmount(_maximumDepositAmount);
+    _configureMinimumAmount(_minimumAmount);
     super._initialize();
   }
 
   function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant whenNotPaused {
+    require(
+      _extData.encryptedOutput1.length <= MAX_ENCRYPTED_OUTPUT_SIZE &&
+      _extData.encryptedOutput2.length <= MAX_ENCRYPTED_OUTPUT_SIZE,
+      "Encrypted output too large"
+    );
+    if (_extData.extAmount > 0) {
+      require(uint256(_extData.extAmount) >= minimumAmount, "Amount too small");
+    } else if (_extData.extAmount < 0) {
+      require(uint256(-_extData.extAmount) + _extData.fee >= minimumAmount, "Amount too small");
+    }
     require(isKnownRoot(_args.root), "Invalid merkle root");
     require(!isSpent(_args.inputNullifiers[0]) && !isSpent(_args.inputNullifiers[1]), "Input is already spent");
     require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
@@ -125,8 +139,12 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
     _unpause();
   }
 
-  function configureLimits(uint256 _maximumDepositAmount) public onlyAdmin {
-    _configureLimits(_maximumDepositAmount);
+  function configureMaximumDepositAmount(uint256 _maximumDepositAmount) public onlyAdmin {
+    _configureMaximumDepositAmount(_maximumDepositAmount);
+  }
+
+  function configureMinimumAmount(uint256 _minimumAmount) public onlyAdmin {
+    _configureMinimumAmount(_minimumAmount);
   }
 
   function calculatePublicAmount(int256 _extAmount, uint256 _fee) public pure returns (uint256) {
@@ -171,9 +189,16 @@ contract EtherPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, P
     revert("Use transact() to deposit");
   }
 
-  function _configureLimits(uint256 _maximumDepositAmount) internal {
+  function _configureMaximumDepositAmount(uint256 _maximumDepositAmount) internal {
+    require(minimumAmount <= _maximumDepositAmount, "min exceeds max");
     maximumDepositAmount = _maximumDepositAmount;
-    emit LimitsConfigured(_maximumDepositAmount);
+    emit MaximumDepositAmountConfigured(_maximumDepositAmount);
+  }
+
+  function _configureMinimumAmount(uint256 _minimumAmount) internal {
+    require(_minimumAmount <= maximumDepositAmount, "min exceeds max");
+    minimumAmount = _minimumAmount;
+    emit MinimumAmountConfigured(_minimumAmount);
   }
 
   function _authorizeUpgrade(address) internal override onlyAdmin {}

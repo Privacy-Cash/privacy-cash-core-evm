@@ -3,6 +3,7 @@ const { utils } = ethers
 
 const MERKLE_TREE_HEIGHT = 26
 const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('1000')
+const MINIMUM_AMOUNT = utils.parseEther('0.0005')
 const ADMIN_ADDRESS = process.env.ADMIN_ADDRESS || '0x44eb9939cfdE7C394f1632C6890191d695f0a3ce'
 
 async function main() {
@@ -25,7 +26,7 @@ async function main() {
   const EtherPool = await ethers.getContractFactory('EtherPool')
   const etherPool = await upgrades.deployProxy(
     EtherPool,
-    [MAXIMUM_DEPOSIT_AMOUNT, ADMIN_ADDRESS],
+    [MAXIMUM_DEPOSIT_AMOUNT, MINIMUM_AMOUNT, ADMIN_ADDRESS],
     {
       kind: 'uups',
       initializer: 'initialize',
@@ -35,7 +36,7 @@ async function main() {
   )
   await etherPool.deployed()
   console.log(`EtherPool proxy deployed at: ${etherPool.address}`)
-  console.log(`EtherPool initialized with MAXIMUM_DEPOSIT_AMOUNT=${utils.formatEther(MAXIMUM_DEPOSIT_AMOUNT)} ETH`)
+  console.log(`EtherPool initialized with MAXIMUM_DEPOSIT_AMOUNT=${utils.formatEther(MAXIMUM_DEPOSIT_AMOUNT)} ETH, MINIMUM_AMOUNT=${utils.formatEther(MINIMUM_AMOUNT)} ETH`)
 
   let implAddress = 'unknown'
   try {

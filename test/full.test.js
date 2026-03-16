@@ -14,6 +14,7 @@ const { BigNumber } = ethers
 const MERKLE_TREE_HEIGHT = 26
 const MERKLE_TREE_ZERO_VALUE = '2795675251356313514992617062594790716374808130983166135938897961178374655502'
 const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('1')
+const MINIMUM_AMOUNT = utils.parseEther('0.0005')
 
 function createEmptyTree() {
   return new MerkleTree(MERKLE_TREE_HEIGHT, [], { hashFunction: poseidonHash2, zeroElement: MERKLE_TREE_ZERO_VALUE })
@@ -149,6 +150,7 @@ describe('EtherPool', function () {
 
     const initData = EtherPool.interface.encodeFunctionData('initialize', [
       MAXIMUM_DEPOSIT_AMOUNT,
+      MINIMUM_AMOUNT,
       admin.address,
     ])
     const ERC1967Proxy = await ethers.getContractFactory('ERC1967Proxy')
@@ -167,7 +169,7 @@ describe('EtherPool', function () {
     const { etherPool, admin } = await loadFixture(fixture)
     const newDepositLimit = utils.parseEther('1337')
 
-    await etherPool.connect(admin).configureLimits(newDepositLimit)
+    await etherPool.connect(admin).configureMaximumDepositAmount(newDepositLimit)
 
     expect(await etherPool.maximumDepositAmount()).to.be.equal(newDepositLimit)
   })
@@ -491,7 +493,7 @@ describe('EtherPool', function () {
   it('non-admin cannot configure limits', async () => {
     const { etherPool, sender } = await loadFixture(fixture)
     await expect(
-      etherPool.connect(sender).configureLimits(utils.parseEther('999')),
+      etherPool.connect(sender).configureMaximumDepositAmount(utils.parseEther('999')),
     ).to.be.revertedWith('only admin')
   })
 
@@ -560,18 +562,18 @@ describe('EtherPool', function () {
     await etherPool.connect(gov).claimAdmin()
 
     const newLimit = utils.parseEther('500')
-    await etherPool.connect(gov).configureLimits(newLimit)
+    await etherPool.connect(gov).configureMaximumDepositAmount(newLimit)
     expect(await etherPool.maximumDepositAmount()).to.equal(newLimit)
 
     await expect(
-      etherPool.connect(admin).configureLimits(utils.parseEther('1')),
+      etherPool.connect(admin).configureMaximumDepositAmount(utils.parseEther('1')),
     ).to.be.revertedWith('only admin')
   })
 
   it('cannot initialize twice', async function () {
     const { etherPool, admin } = await loadFixture(fixture)
     await expect(
-      etherPool.connect(admin).initialize(utils.parseEther('2'), admin.address),
+      etherPool.connect(admin).initialize(utils.parseEther('2'), MINIMUM_AMOUNT, admin.address),
     ).to.be.reverted
   })
 
@@ -630,7 +632,7 @@ describe('EtherPool', function () {
     ).to.be.revertedWith('amount is larger than maximumDepositAmount')
 
     // Increase limit
-    await etherPool.connect(admin).configureLimits(utils.parseEther('1000'))
+    await etherPool.connect(admin).configureMaximumDepositAmount(utils.parseEther('1000'))
 
     // Should now succeed
     await transaction({ etherPool, tree, outputs: [utxo], encryptionKey })
@@ -646,7 +648,7 @@ describe('EtherPool', function () {
     await transaction({ etherPool, tree, outputs: [depositUtxo], encryptionKey })
 
     // Decrease limit to 0.1 ETH
-    await etherPool.connect(admin).configureLimits(utils.parseEther('0.1'))
+    await etherPool.connect(admin).configureMaximumDepositAmount(utils.parseEther('0.1'))
 
     // Now 0.5 ETH deposit should fail
     const utxo = new Utxo({ amount: utils.parseEther('0.5') })
@@ -660,7 +662,7 @@ describe('EtherPool', function () {
     const tree = createEmptyTree()
 
     // Set limit high enough for initial deposit
-    await etherPool.connect(admin).configureLimits(utils.parseEther('200'))
+    await etherPool.connect(admin).configureMaximumDepositAmount(utils.parseEther('200'))
 
     // Deposit 100 ETH
     const depositAmount = utils.parseEther('100')
@@ -670,7 +672,7 @@ describe('EtherPool', function () {
     expect(await ethers.provider.getBalance(etherPool.address)).to.be.equal(depositAmount)
 
     // Lower deposit limit to 50 ETH
-    await etherPool.connect(admin).configureLimits(utils.parseEther('50'))
+    await etherPool.connect(admin).configureMaximumDepositAmount(utils.parseEther('50'))
 
     // Verify new 100 ETH deposit fails
     const blockedUtxo = new Utxo({ amount: depositAmount })
