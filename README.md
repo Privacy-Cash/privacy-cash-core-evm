@@ -51,13 +51,13 @@ Contract Method Selector: upgradeToAndCall
 newImplementation (address): implementation address deployed from scripts/deployUpgrade.js script
 data: 0x
 
-## Testnet Deployment (Base Sepolia)
+## Mainnet Deployment (Base)
 
 | Contract | Address |
 |---|---|
-| EtherPool (proxy) | `0x51450B59ec2Bc26852415cB1047DF31772aD9cD5` |
-| Verifier2 | `0xEec9e054f8CCfff212f8c088B60cD9b308a9bef8` |
-| Hasher | `0x0e136048ac3d58e87Cb6aA060CebBC13A876C8eA` |
+| EtherPool (proxy) | `0xBcFfcE41652093264D0807e2E834afF255982c98` |
+| Verifier2 | `0xE24f4c1aE704Bd968fb59D470d73F6066d225b7c` |
+| Hasher | `0x04559676CBdfea9f849f6207f9A7947C3288d2e3` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
 ## Architecture

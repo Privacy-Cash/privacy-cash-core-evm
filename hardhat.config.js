@@ -2,7 +2,7 @@
 require('@typechain/hardhat')
 require('@nomiclabs/hardhat-ethers')
 require('@nomiclabs/hardhat-waffle')
-require('@nomiclabs/hardhat-etherscan')
+require('@nomicfoundation/hardhat-verify')
 require('@openzeppelin/hardhat-upgrades')
 require('dotenv').config()
 
@@ -70,6 +70,10 @@ const config = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_KEY,
+    enabled: true,
+  },
+  sourcify: {
+    enabled: false,
   },
   mocha: {
     timeout: 120000,
