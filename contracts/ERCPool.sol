@@ -4,17 +4,22 @@ pragma solidity 0.8.24;
 
 import "./Verifier2.sol";
 import "./MerkleTreeWithHistory.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-// Pool for ERC-20 transactions.
+// Pool for a single ERC-20 asset (one deployment per token).
 contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, PausableUpgradeable {
+  using SafeERC20 for IERC20;
+
   int256 public constant MAX_EXT_AMOUNT = 2**248;
   uint256 public constant MAX_FEE = 2**248;
   uint256 public constant MAX_ENCRYPTED_OUTPUT_SIZE = 256;
 
   Verifier2 public immutable verifier2;
+  IERC20 public immutable token;
   address public admin;
   address public pendingAdmin;
 
@@ -58,11 +63,14 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
   constructor(
     Verifier2 _verifier2,
     uint32 _levels,
-    address _hasher
+    address _hasher,
+    IERC20 _token
   )
     MerkleTreeWithHistory(_levels, _hasher)
   {
+    require(address(_token) != address(0), "token is zero address");
     verifier2 = _verifier2;
+    token = _token;
     _disableInitializers();
   }
 
@@ -76,6 +84,7 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
   }
 
   function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant whenNotPaused {
+    require(msg.value == 0, "Native token not accepted");
     require(
       _extData.encryptedOutput1.length <= MAX_ENCRYPTED_OUTPUT_SIZE &&
       _extData.encryptedOutput2.length <= MAX_ENCRYPTED_OUTPUT_SIZE,
@@ -97,19 +106,16 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
 
     // internal transfers are not allowed. if _extData.extAmount == 0, it will fail at calculatePublicAmount() above.
     if (_extData.extAmount > 0) {
-      require(msg.value == uint256(_extData.extAmount), "Incorrect ETH value");
       require(uint256(_extData.extAmount) <= maximumDepositAmount, "amount is larger than maximumDepositAmount");
+      token.safeTransferFrom(msg.sender, address(this), uint256(_extData.extAmount));
     } else if (_extData.extAmount < 0) {
-      require(msg.value == 0, "Cannot send ETH during withdrawal");
       require(_extData.recipient != address(0), "Can't withdraw to zero address");
-      (bool success, ) = _extData.recipient.call{value: uint256(-_extData.extAmount)}("");
-      require(success, "ETH transfer failed");
+      token.safeTransfer(_extData.recipient, uint256(-_extData.extAmount));
     }
 
     // fees and feeRecipient are intentionally not checked at protocol level, as a tip to the relayer
     if (_extData.fee > 0) {
-      (bool success, ) = _extData.feeRecipient.call{value: _extData.fee}("");
-      require(success, "Fee transfer failed");
+      token.safeTransfer(_extData.feeRecipient, _extData.fee);
     }
 
     _insert(_args.outputCommitments[0], _args.outputCommitments[1]);
@@ -184,9 +190,8 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
       );
   }
 
-  // Only accept ETH via transact() -- direct sends would be permanently locked
   receive() external payable {
-    revert("Use transact() to deposit");
+    revert("Native token transfer not accepted");
   }
 
   function _configureMaximumDepositAmount(uint256 _maximumDepositAmount) internal {

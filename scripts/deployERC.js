@@ -2,8 +2,21 @@ const { ethers, upgrades } = require('hardhat')
 const { utils } = ethers
 
 const MERKLE_TREE_HEIGHT = 26
-const MAXIMUM_DEPOSIT_AMOUNT = utils.parseEther('1000')
-const MINIMUM_AMOUNT = utils.parseEther('0.0005')
+
+/** Base mainnet native USDC — see https://docs.base.org/tokens */
+const BASE_MAINNET_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+
+const TOKEN_ADDRESS = (process.env.TOKEN_ADDRESS || BASE_MAINNET_USDC).toLowerCase()
+const TOKEN_DECIMALS = parseInt(process.env.TOKEN_DECIMALS || '6', 10)
+
+const MAXIMUM_DEPOSIT_AMOUNT = process.env.MAXIMUM_DEPOSIT_AMOUNT
+  ? utils.parseUnits(process.env.MAXIMUM_DEPOSIT_AMOUNT, TOKEN_DECIMALS)
+  : utils.parseUnits('1000000', TOKEN_DECIMALS)
+
+const MINIMUM_AMOUNT = process.env.MINIMUM_AMOUNT
+  ? utils.parseUnits(process.env.MINIMUM_AMOUNT, TOKEN_DECIMALS)
+  : utils.parseUnits('1', TOKEN_DECIMALS)
+
 const ADMIN_ADDRESS = process.env.ADMIN_ADDRESS || '0x44eb9939cfdE7C394f1632C6890191d695f0a3ce'
 
 async function main() {
@@ -23,6 +36,14 @@ async function main() {
   await hasher.deployed()
   console.log(`Hasher deployed at: ${hasher.address}`)
 
+  console.log(
+    `ERCPool constructor args:\n${JSON.stringify(
+      [verifier2.address, MERKLE_TREE_HEIGHT, hasher.address, TOKEN_ADDRESS],
+      null,
+      2,
+    )}\n`,
+  )
+
   const ERCPool = await ethers.getContractFactory('ERCPool')
   const ercPool = await upgrades.deployProxy(
     ERCPool,
@@ -30,13 +51,18 @@ async function main() {
     {
       kind: 'uups',
       initializer: 'initialize',
-      constructorArgs: [verifier2.address, MERKLE_TREE_HEIGHT, hasher.address],
+      constructorArgs: [verifier2.address, MERKLE_TREE_HEIGHT, hasher.address, TOKEN_ADDRESS],
       unsafeAllow: ['state-variable-immutable', 'constructor'],
     },
   )
   await ercPool.deployed()
   console.log(`ERCPool proxy deployed at: ${ercPool.address}`)
-  console.log(`ERCPool initialized with MAXIMUM_DEPOSIT_AMOUNT=${utils.formatEther(MAXIMUM_DEPOSIT_AMOUNT)} ETH, MINIMUM_AMOUNT=${utils.formatEther(MINIMUM_AMOUNT)} ETH`)
+  console.log(
+    `ERCPool token: ${TOKEN_ADDRESS} (${TOKEN_DECIMALS} decimals); max deposit: ${utils.formatUnits(
+      MAXIMUM_DEPOSIT_AMOUNT,
+      TOKEN_DECIMALS,
+    )} units; min amount: ${utils.formatUnits(MINIMUM_AMOUNT, TOKEN_DECIMALS)} units`,
+  )
 
   let implAddress = 'unknown'
   try {
@@ -47,6 +73,7 @@ async function main() {
   const network = await ethers.provider.getNetwork()
   console.log('\n--- Deployment Summary ---')
   console.log(`Network:    ${network.name} (chainId: ${network.chainId})`)
+  console.log(`Token:      ${TOKEN_ADDRESS}`)
   console.log(`Verifier2:  ${verifier2.address}`)
   console.log(`Hasher:     ${hasher.address}`)
   console.log(`ERCPool (proxy):  ${ercPool.address}`)
