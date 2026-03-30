@@ -242,21 +242,20 @@ describe('ERCPool', function () {
     ).to.be.revertedWith('Encrypted output too large')
   })
 
-  it('rejects transact with native value attached', async () => {
-    const { ercPool } = await loadFixture(fixture)
+  it('rejects transact with native value attached (non-payable)', async () => {
+    const { ercPool, sender } = await loadFixture(fixture)
+    const data = ercPool.interface.encodeFunctionData('transact', [
+      dummyProof(),
+      dummyExtData({ extAmount: MINIMUM_AMOUNT }),
+    ])
     await expect(
-      ercPool.transact(dummyProof(), dummyExtData({ extAmount: MINIMUM_AMOUNT }), {
-        value: 1,
-        gasLimit: 1e6,
-      }),
-    ).to.be.revertedWith('Native token not accepted')
+      sender.sendTransaction({ to: ercPool.address, data, value: 1, gasLimit: 1e6 }),
+    ).to.be.reverted
   })
 
-  it('rejects direct native transfers (receive)', async () => {
+  it('rejects plain ETH transfers (no receive)', async () => {
     const { ercPool, sender } = await loadFixture(fixture)
-    await expect(sender.sendTransaction({ to: ercPool.address, value: 1 })).to.be.revertedWith(
-      'Native token transfer not accepted',
-    )
+    await expect(sender.sendTransaction({ to: ercPool.address, value: 1 })).to.be.reverted
   })
 
   it('rejects deposit below minimumAmount', async () => {

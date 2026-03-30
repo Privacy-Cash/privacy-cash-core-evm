@@ -83,8 +83,7 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
     super._initialize();
   }
 
-  function transact(Proof memory _args, ExtData memory _extData) public payable nonReentrant whenNotPaused {
-    require(msg.value == 0, "Native token not accepted");
+  function transact(Proof memory _args, ExtData memory _extData) public nonReentrant whenNotPaused {
     require(
       _extData.encryptedOutput1.length <= MAX_ENCRYPTED_OUTPUT_SIZE &&
       _extData.encryptedOutput2.length <= MAX_ENCRYPTED_OUTPUT_SIZE,
@@ -188,10 +187,6 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
           uint256(_args.outputCommitments[1])
         ]
       );
-  }
-
-  receive() external payable {
-    revert("Native token transfer not accepted");
   }
 
   function _configureMaximumDepositAmount(uint256 _maximumDepositAmount) internal {
