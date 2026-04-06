@@ -55,9 +55,10 @@ data: 0x
 
 | Contract | Address |
 |---|---|
-| EtherPool (proxy) | `0xBcFfcE41652093264D0807e2E834afF255982c98` |
-| Verifier2 | `0xE24f4c1aE704Bd968fb59D470d73F6066d225b7c` |
-| Hasher | `0x04559676CBdfea9f849f6207f9A7947C3288d2e3` |
+| EtherPool (proxy) | `0x7F673790C08Ddf27c0Aa6fa9526CCC8dAaB081Ec` |
+| EtherPool (impl) | `0xa9CeFeAD8d2f343B2c8C561e903378EDe899ecdD` |
+| Verifier2 | `0x8707551c52F390a262ad796fAb8D2477D56dABD0` |
+| Hasher | `0xf48b36221E4BE8B385617FB24A0842068524E9aC` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
 ## Architecture
