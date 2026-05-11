@@ -37,6 +37,9 @@ npx hardhat run scripts/deploy.js --network base
 
 # Base (mainnet USDC)
 npx hardhat run scripts/deployERC.js --network base
+
+# Ethereum (mainnet Ether)
+npx hardhat run scripts/deploy.js --network mainnet
 ```
 
 ## Upgrade
@@ -72,6 +75,16 @@ data: 0x
 | ERCPool (impl) | `0x6b5365Cf6118BcEabE41b5ACff0b20E8f4447c9A` |
 | Verifier2 | `0x41187a79C57e9143b1f6c4aa7E16BF0e07FF7C6F` |
 | Hasher | `0xBB0C7F576B7bdAa8f2a119cb295076aCD0C9013f` |
+| Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
+
+## Mainnet Deployment (Mainnet Ether)
+
+| Contract | Address |
+|---|---|
+| ERCPool (proxy) | `0x77A10AE3E513c2D73D73eb52212c6918C8830dd0` |
+| ERCPool (impl) | `0xEC5266c9e44631e1ba22FD6377C38130c1F3B738` |
+| Verifier2 | `0xBcFfcE41652093264D0807e2E834afF255982c98` |
+| Hasher | `0x22D8509E7AF58b1EaFB311f8F76E81dC3a391F77` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
 ## Architecture
