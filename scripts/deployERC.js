@@ -17,7 +17,7 @@ const MINIMUM_AMOUNT = process.env.MINIMUM_AMOUNT
   ? utils.parseUnits(process.env.MINIMUM_AMOUNT, TOKEN_DECIMALS)
   : utils.parseUnits('1', TOKEN_DECIMALS)
 
-const ADMIN_ADDRESS = process.env.ADMIN_ADDRESS || '0x44eb9939cfdE7C394f1632C6890191d695f0a3ce'
+const ADMIN_ADDRESS = '0x44eb9939cfdE7C394f1632C6890191d695f0a3ce'
 
 async function main() {
   require('./compileHasher')
