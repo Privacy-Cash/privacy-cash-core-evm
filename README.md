@@ -40,6 +40,9 @@ npx hardhat run scripts/deployERC.js --network base
 
 # Ethereum (mainnet Ether)
 npx hardhat run scripts/deploy.js --network mainnet
+
+# Ethereum (mainnet USDT)
+npx hardhat run scripts/deployERC.js --network mainnet
 ```
 
 ## Upgrade
