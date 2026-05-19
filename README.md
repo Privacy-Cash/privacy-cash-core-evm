@@ -90,6 +90,16 @@ data: 0x
 | Hasher | `0x22D8509E7AF58b1EaFB311f8F76E81dC3a391F77` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
+## Mainnet Deployment (Mainnet USDT)
+
+| Contract | Address |
+|---|---|
+| ERCPool (proxy) | `0xC88F4dF2B6EdDd6B6Bdf95A0177f50C90Fa7527f` |
+| ERCPool (impl) | `0x803db1b37e3bb94d65e42F3dC886614587583958` |
+| Verifier2 | `0x9926A40B0879b36F9586c4285f0fae597bd56313` |
+| Hasher | `0x1d4FE6c99E9637460C8F9fDE052165C9e5D3106d` |
+| Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
+
 ## Architecture
 
 - **EtherPool** -- Main contract handling deposits, withdrawals, and shielded ETH transfers with ZK proof verification. Inherits from `MerkleTreeWithHistory` and `UUPSUpgradeable`.
