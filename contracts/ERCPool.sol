@@ -201,5 +201,28 @@ contract ERCPool is MerkleTreeWithHistory, UUPSUpgradeable, ReentrancyGuard, Pau
     emit MinimumAmountConfigured(_minimumAmount);
   }
 
+  /// @dev Method to claim junk and accidentally sent tokens
+  function rescueTokens(
+    IERC6777 _token,
+    address payable _to,
+    uint256 _balance
+  ) external onlyMultisig {
+    require(_to != address(0), "Privacy Cash: can not send to zero address");
+    require(_token != token, "can not rescue pool asset");
+
+    if (_token == IERC6777(0)) {
+      // for Ether
+      uint256 totalBalance = address(this).balance;
+      uint256 balance = _balance == 0 ? totalBalance : _balance;
+      _to.transfer(balance);
+    } else {
+      // any other erc20
+      uint256 totalBalance = _token.balanceOf(address(this));
+      uint256 balance = _balance == 0 ? totalBalance : _balance;
+      require(balance > 0, "Privacy Cash: trying to send 0 balance");
+      _token.transfer(_to, balance);
+    }
+  }
+
   function _authorizeUpgrade(address) internal override onlyAdmin {}
 }
