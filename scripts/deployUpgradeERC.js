@@ -1,10 +1,8 @@
 const { ethers, upgrades } = require('hardhat')
 
 async function main() {
-  const proxyAddress = process.env.PROXY_ADDRESS
-  if (!proxyAddress) {
-    throw new Error('PROXY_ADDRESS env variable is required')
-  }
+  // USDT proxy address on Ethereum mainnet
+  const proxyAddress = "0xC88F4dF2B6EdDd6B6Bdf95A0177f50C90Fa7527f"
 
   const [deployer] = await ethers.getSigners()
   console.log(`Upgrading with account: ${deployer.address}`)
@@ -31,20 +29,22 @@ async function main() {
   })
   console.log(`New implementation deployed and validated at: ${newImpl}`)
 
-  if (deployer.address.toLowerCase() === currentAdmin.toLowerCase()) {
-    const tx = await proxy.upgradeToAndCall(newImpl, '0x')
-    await tx.wait()
-    console.log(`ERCPool upgraded at proxy: ${proxyAddress}`)
-  } else {
-    console.log(`Admin (${currentAdmin}) must call upgradeToAndCall(${newImpl}, "0x") on the proxy to complete the upgrade.`)
-  }
+  // Call upgradeToAndCall() on SAFE next.
 
-  try {
-    const implAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress)
-    console.log(`Current implementation: ${implAddress}`)
-  } catch {
-    console.log('Could not read implementation address from ERC-1967 slot')
-  }
+  // if (deployer.address.toLowerCase() === currentAdmin.toLowerCase()) {
+  //   const tx = await proxy.upgradeToAndCall(newImpl, '0x')
+  //   await tx.wait()
+  //   console.log(`ERCPool upgraded at proxy: ${proxyAddress}`)
+  // } else {
+  //   console.log(`Admin (${currentAdmin}) must call upgradeToAndCall(${newImpl}, "0x") on the proxy to complete the upgrade.`)
+  // }
+
+  // try {
+  //   const implAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress)
+  //   console.log(`Current implementation: ${implAddress}`)
+  // } catch {
+  //   console.log('Could not read implementation address from ERC-1967 slot')
+  // }
 }
 
 main()
