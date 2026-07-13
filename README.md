@@ -43,6 +43,9 @@ npx hardhat run scripts/deploy.js --network mainnet
 
 # Ethereum (mainnet USDT)
 npx hardhat run scripts/deployERC.js --network mainnet
+
+# BNB Chain (mainnet BNB)
+npx hardhat run scripts/deploy.js --network bsc
 ```
 
 ## Upgrade
@@ -98,6 +101,16 @@ data: 0x
 | ERCPool (impl) | `0x803db1b37e3bb94d65e42F3dC886614587583958` |
 | Verifier2 | `0x9926A40B0879b36F9586c4285f0fae597bd56313` |
 | Hasher | `0x1d4FE6c99E9637460C8F9fDE052165C9e5D3106d` |
+| Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
+
+## Mainnet Deployment (BNB Chain Ether)
+
+| Contract | Address |
+|---|---|
+| EtherPool (proxy) | `0x22D8509E7AF58b1EaFB311f8F76E81dC3a391F77` |
+| EtherPool (impl) | `0xBcFfcE41652093264D0807e2E834afF255982c98` |
+| Verifier2 | `0x04559676CBdfea9f849f6207f9A7947C3288d2e3` |
+| Hasher | `0xfeE24Cf58d2F74Fa9b01D715E342d8462AC832A1` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
 ## Architecture
