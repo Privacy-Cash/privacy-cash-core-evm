@@ -49,6 +49,15 @@ npx hardhat run scripts/deploy.js --network bsc
 
 # BNB Chain (mainnet USDT)
 npx hardhat run scripts/deployERC.js --network bsc
+
+# Robinhood Chain (mainnet Ether)
+npx hardhat run scripts/deploy.js --network robinhood
+```
+
+Verify on Robinhood Chain (Blockscout, no API key needed):
+
+```bash
+npx hardhat verify --network robinhood <address> [constructor args]
 ```
 
 ## Upgrade
