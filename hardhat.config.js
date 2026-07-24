@@ -113,10 +113,36 @@ const config = {
             mnemonic: 'test test test test test test test test test test test junk',
           },
     },
+    robinhood: {
+      url: 'https://rpc.mainnet.chain.robinhood.com',
+      chainId: 4663,
+      accounts: process.env.PRIVATE_KEY
+        ? [process.env.PRIVATE_KEY]
+        : {
+            mnemonic: 'test test test test test test test test test test test junk',
+          },
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_KEY,
-    enabled: true,
+    // Robinhood Chain is not on Etherscan; its Blockscout explorer is configured below.
+    // Disable the Etherscan provider when verifying on robinhood to avoid a spurious failure.
+    enabled: !process.argv.includes('robinhood'),
+  },
+  // Robinhood Chain uses Blockscout (https://docs.robinhood.com/chain/deploy-smart-contracts).
+  // Only enabled for --network robinhood so verification on other chains keeps using Etherscan.
+  blockscout: {
+    enabled: process.argv.includes('robinhood'),
+    customChains: [
+      {
+        network: 'robinhood',
+        chainId: 4663,
+        urls: {
+          apiURL: 'https://robinhoodchain.blockscout.com/api',
+          browserURL: 'https://robinhoodchain.blockscout.com',
+        },
+      },
+    ],
   },
   sourcify: {
     enabled: false,
