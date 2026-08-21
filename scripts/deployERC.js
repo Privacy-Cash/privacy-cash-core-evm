@@ -3,17 +3,13 @@ const { utils } = ethers
 
 const MERKLE_TREE_HEIGHT = 26
 
-/** BNB native USDT — see https://bscscan.com/token/0x55d398326f99059ff775485246999027b3197955 */
-const TOKEN_ADDRESS = '0x55d398326f99059ff775485246999027b3197955'.toLowerCase()
-const TOKEN_DECIMALS = parseInt(process.env.TOKEN_DECIMALS || '18', 10)
+/** USDG (6 decimals) — see https://robinhoodchain.blockscout.com/address/0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168 */
+const TOKEN_ADDRESS = '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168'.toLowerCase()
+const TOKEN_DECIMALS = parseInt('6', 10)
 
-const MAXIMUM_DEPOSIT_AMOUNT = process.env.MAXIMUM_DEPOSIT_AMOUNT
-  ? utils.parseUnits(process.env.MAXIMUM_DEPOSIT_AMOUNT, TOKEN_DECIMALS)
-  : utils.parseUnits('1000000', TOKEN_DECIMALS)
+const MAXIMUM_DEPOSIT_AMOUNT =  utils.parseUnits('1000000', TOKEN_DECIMALS)
 
-const MINIMUM_AMOUNT = process.env.MINIMUM_AMOUNT
-  ? utils.parseUnits(process.env.MINIMUM_AMOUNT, TOKEN_DECIMALS)
-  : utils.parseUnits('1', TOKEN_DECIMALS)
+const MINIMUM_AMOUNT = utils.parseUnits('10', TOKEN_DECIMALS)
 
 const ADMIN_ADDRESS = '0x44eb9939cfdE7C394f1632C6890191d695f0a3ce'
 

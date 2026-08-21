@@ -52,6 +52,9 @@ npx hardhat run scripts/deployERC.js --network bsc
 
 # Robinhood Chain (mainnet Ether)
 npx hardhat run scripts/deploy.js --network robinhood
+
+# Robinhood Chain (mainnet USDG)
+npx hardhat run scripts/deployERC.js --network robinhood
 ```
 
 Verify on Robinhood Chain (Blockscout, no API key needed):
@@ -143,6 +146,16 @@ data: 0x
 | EtherPool (impl) | `0x22D8509E7AF58b1EaFB311f8F76E81dC3a391F77` |
 | Verifier2 | `0xfeE24Cf58d2F74Fa9b01D715E342d8462AC832A1` |
 | Hasher | `0xBcFfcE41652093264D0807e2E834afF255982c98` |
+| Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
+
+## Mainnet Deployment (Robinhood Chain USDG 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168)
+
+| Contract | Address |
+|---|---|
+| ERCPool (proxy) | `0xBB0C7F576B7bdAa8f2a119cb295076aCD0C9013f` |
+| ERCPool (impl) | `0x41187a79C57e9143b1f6c4aa7E16BF0e07FF7C6F` |
+| Verifier2 | `0xa9CeFeAD8d2f343B2c8C561e903378EDe899ecdD` |
+| Hasher | `0x7F673790C08Ddf27c0Aa6fa9526CCC8dAaB081Ec` |
 | Admin (multisig) | `0x44eb9939cfdE7C394f1632C6890191d695f0a3ce` |
 
 ## Architecture
